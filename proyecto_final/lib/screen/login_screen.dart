@@ -1,9 +1,11 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:proyecto_final/theme/app_theme.dart';
 import '../provider/login_provider.dart';
 import '../provider/util_provider.dart';
+import '../theme/app_theme.dart';
 import '../util/util.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -92,9 +94,7 @@ class LoginScreen extends StatelessWidget {
                     if (value == null || value.isEmpty) {
                       return 'Ingresa tu contraseña';
                     }
-                    if (!isValidPassword(value)) {
-                      return 'Ingresa una contraseña valida';
-                    }
+                 
                     return null;
                   },
                 ),
@@ -117,6 +117,8 @@ class LoginScreen extends StatelessWidget {
       final rest = await UtilProvider.rtp.saveStorage(
           usuario: flp.email, password: flp.password);
       if ( rest ==1) {
+                await login(email: flp.email, password: flp.password);
+
         Dialogos.msgDialog(
           context: context,
           texto: 'Bienvenido',
@@ -147,6 +149,30 @@ bool isValidEmail(String email) {
   return emailRegex.hasMatch(email);
 }
 
-bool isValidPassword(String password) {
-  return password.length >= 3;
+Future<void> login({required String email, required String password}) async {
+  try {
+    final response = await http.post(
+      Uri.parse('https://localhost:7109/tenis/login'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({"email": email, "password": password}),
+    );
+
+    print('Código de estado de respuesta: ${response.statusCode}');
+    print('Cuerpo de la respuesta: ${response.body}');
+
+    if (response.statusCode == 200) {
+      print('Inicio de sesión exitoso');
+      // Aquí podrías realizar acciones adicionales después del inicio de sesión exitoso
+    } else if (response.statusCode == 401) {
+      // Usuario no encontrado o credenciales inválidas
+      throw Exception('Usuario no encontrado');
+    } else {
+      throw Exception('Fallo al iniciar sesión');
+    }
+  } catch (e) {
+    print('Error al iniciar sesión: $e');
+    throw Exception('Error al iniciar sesión: $e');
+  }
 }
