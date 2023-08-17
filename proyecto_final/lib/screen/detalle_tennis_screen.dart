@@ -1,66 +1,132 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:proyecto_final/provider/detalle_provider.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
-class DetalleProductoScreen extends StatefulWidget {
-  final dynamic productDetails;
+class DetalleProductoScreen extends StatelessWidget {
+  final Map<String, dynamic> productoDetalle;
 
-  const DetalleProductoScreen({Key? key, required this.productDetails}) : super(key: key);
-
-  @override
-  State<DetalleProductoScreen> createState() => _DetalleProductoState();
-}
-
-class _DetalleProductoState extends State<DetalleProductoScreen> {
-  @override
-  void initState() {
-    super.initState();
-    final productId = widget.productDetails['idProducto'];
-    Provider.of<DetalleProvider>(context, listen: false).getProductById(productId: productId);
-  }
+  const DetalleProductoScreen({required this.productoDetalle, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final pProvider = Provider.of<DetalleProvider>(context);
-    // Aquí puedes usar pProvider para acceder a los datos obtenidos del detalle del producto
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.productDetails['producto']['nombre']), // Cambiar color de fondo de la AppBar
+        title: Text('Detalle del Producto'),
+        backgroundColor: Colors.orange,
       ),
-      body: Center(
+      body: Container(
+        padding: EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              widget.productDetails['producto']['image_name'], // Ajustar según la estructura de datos
-              height: 200,
+            Container(
+              height: 180,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                image: DecorationImage(
+                  image: NetworkImage(productoDetalle['image_name']),
+            
+                ),
+              ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 20),
             Text(
-              'Nombre: ${widget.productDetails['producto']['nombre']}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              productoDetalle['nombre'],
+              style: TextStyle(
+                fontSize: 18, 
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 10),
             Text(
-              '${widget.productDetails['producto']['precio']} MXN',
+              'Descripción:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
+            Text(
+              productoDetalle['descripccion'],
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Precio:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
+            Text(
+              '\$${productoDetalle['precio']}',
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            SizedBox(height: 8),
-            Text(
-              '${widget.productDetails['producto']['descripccion']}',
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Regresar a la pantalla anterior
-              },
-              child: Text('Cerrar'),
+            SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  final productId = productoDetalle['idProducto'] as int;
+                  print('ID del producto a eliminar: $productId');
+
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.WARNING,
+                    headerAnimationLoop: false,
+                    animType: AnimType.SCALE,
+                    title: '¡Advertencia!',
+                    desc: '¿Estás seguro de que deseas eliminar este producto?',
+                    btnCancelOnPress: () {},
+                    btnOkOnPress: () async {
+                      try {
+                        await updateTennis(productId: productId);
+                        Navigator.pop(context); // Cerrar la pantalla después de eliminar
+                      } catch (e) {
+                        print('Error al eliminar el producto: $e');
+                      }
+                    },
+                  ).show();
+                },
+                child: Text(
+                  'Eliminar',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.red, // Color de fondo rojo
+                  textStyle: TextStyle(fontSize: 16),
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+Future<void> updateTennis({required int productId}) async {
+  try {
+    final response = await http.post(
+      Uri.parse('https://localhost:7109/tenis/CambiarEstatusProducto/'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({"idProducto": productId}),
+    );
+
+    print('Response Status Code: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      print('Producto actualizado exitosamente');
+      // Aquí podrías notificar al proveedor para actualizar la lista de productos
+    } else {
+      throw Exception('Fallo al actualizar el producto');
+    }
+  } catch (e) {
+    print('Error al actualizar el producto: $e');
   }
 }

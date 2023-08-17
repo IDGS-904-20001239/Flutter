@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:proyecto_final/screen/screen.dart';
-import '../model/tennis_model.dart';
 import '../provider/provider.dart';
 import '../theme/app_theme.dart';
 import 'package:proyecto_final/widgets/widget.dart';
+
+import 'detalle_tennis_screen.dart';
 
 class TennisScreen extends StatefulWidget {
   const TennisScreen({Key? key}) : super(key: key);
@@ -27,9 +28,6 @@ class _TennisScreenState extends State<TennisScreen> {
   Widget build(BuildContext context) {
     final tProvider = Provider.of<TennisProvider>(context);
     List<dynamic> tennisList = tProvider.tennisList;
-    var productService = TennisProvider();
-    final Map<String, dynamic>? product =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     void showWarningDialog(BuildContext context) {
       AwesomeDialog(
@@ -41,7 +39,7 @@ class _TennisScreenState extends State<TennisScreen> {
         desc: '¿Estás seguro de que deseas salir de la aplicación?',
         btnCancelOnPress: () {},
         btnOkOnPress: () async {
-              await UtilProvider.rtp.clearSession();
+          await UtilProvider.rtp.clearSession();
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -108,51 +106,33 @@ class _TennisScreenState extends State<TennisScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Precio: ${product['precio']} MXN',
+                                'Estatus: ${product['estatus']}',
                                 style: TextStyle(color: Colors.grey),
                               ),
-                              Text(
-                                'Descripción: ${product['descripccion']}',
-                                style: TextStyle(color: Colors.black),
-                              ),
+                            
                             ],
                           ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            SizedBox(width: 16),
                             GestureDetector(
-                            onTap: () async {
-          final productId = product['idProducto'] as int;
-        print('ID del producto a eliminar: $productId');
-
-        AwesomeDialog(
-          context: context,
-          dialogType: DialogType.WARNING,
-          headerAnimationLoop: false,
-          animType: AnimType.SCALE,
-          title: '¡Advertencia!',
-          desc: '¿Estás seguro de que deseas eliminar este producto?',
-          btnCancelOnPress: () {},
-          btnOkOnPress: () async {
-          try {
-            await updateTennis(productId: productId); // Llamada a la función de actualización
-                   setState(() {
-          // Actualiza el estado para que se refleje el cambio en la interfaz
-              // Esto hará que la lista de productos se reconstruya con el producto eliminado
-        });
-          } catch (e) {
-            print('Error al eliminar el producto: $e');
-          }
-          },
-        ).show();
-      },
-      child: Icon(
-        Icons.delete,
-        color: Colors.red,
-        size: 32,
-      ),
+                              onTap: () async {
+                                // Navegar a la pantalla de detalles
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DetalleProductoScreen(
+                                      productoDetalle: product,
+                                   
+                                    )),
+                                );
+                              },
+                              child: Icon(
+                                Icons.remove_red_eye,
+                                color: Colors.orange,
+                                size: 32,
+                              ),
                             ),
                           ],
                         ),
@@ -169,42 +149,21 @@ class _TennisScreenState extends State<TennisScreen> {
   }
 }
 
-
-Future<dynamic> getProductById({required int productId}) async {
+Future<void> getTennisDetalle({required int productId}) async {
   try {
     final response = await http.post(
-      Uri.parse('https://localhost:7109/tenis/MostrarDetalleProductoPorId/$productId'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map;
-    } else {
-      throw Exception('Fallo en la carga');
-    }
-  } catch (e) {
-    print(e);
-  }
-}
-
-Future<void> updateTennis({required int productId}) async {
-  try {
-    final response = await http.post(
-      Uri.parse('https://localhost:7109/tenis/CambiarEstatusProducto/'),
+      Uri.parse('https://localhost:7109/tenis/MostrarDetalleProductoPorId/'),
       headers: {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({"idProducto": productId, "nuevoCampo": "nuevoValor"}),
-      // Puedes añadir más campos que necesitas actualizar en el cuerpo JSON
     );
-
+    
     print('Response Status Code: ${response.statusCode}');
     print('Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
-      print('Producto actualizado exitosamente');
+      print('Detalles del producto');
       // Aquí podrías notificar al proveedor para actualizar la lista de productos
     } else {
       throw Exception('Fallo al actualizar el producto');
@@ -213,4 +172,3 @@ Future<void> updateTennis({required int productId}) async {
     print('Error al actualizar el producto: $e');
   }
 }
-
