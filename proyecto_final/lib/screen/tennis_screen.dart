@@ -72,12 +72,6 @@ class _TennisScreenState extends State<TennisScreen> {
               itemCount: tennisList.length,
               itemBuilder: (context, index) {
                 var product = tennisList[index];
-                var imageAssets = [
-                  'assets/producto03.jpeg',
-                  'assets/producto02.jpeg',
-                  'assets/producto04.jpeg',
-                  'assets/producto01.jpeg',
-                ];
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Card(
@@ -91,8 +85,8 @@ class _TennisScreenState extends State<TennisScreen> {
                           height: 200,
                           child: ClipRRect(
                             borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                            child: Image.asset(
-                              imageAssets[index % imageAssets.length],
+                            child: Image.network(
+                              product['image_name'],
                               fit: BoxFit.cover,
                             ),
                           ),

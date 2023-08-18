@@ -117,7 +117,7 @@ class LoginScreen extends StatelessWidget {
       final rest = await UtilProvider.rtp.saveStorage(
           usuario: flp.email, password: flp.password);
       if ( rest ==1) {
-                await login(email: flp.email, password: flp.password);
+                await postLogin(email: flp.email, password: flp.password);
 
         Dialogos.msgDialog(
           context: context,
@@ -149,30 +149,18 @@ bool isValidEmail(String email) {
   return emailRegex.hasMatch(email);
 }
 
-Future<void> login({required String email, required String password}) async {
-  try {
-    final response = await http.post(
-      Uri.parse('https://localhost:7109/tenis/login'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({"email": email, "password": password}),
-    );
-
-    print('Código de estado de respuesta: ${response.statusCode}');
-    print('Cuerpo de la respuesta: ${response.body}');
-
-    if (response.statusCode == 200) {
-      print('Inicio de sesión exitoso');
-      // Aquí podrías realizar acciones adicionales después del inicio de sesión exitoso
-    } else if (response.statusCode == 401) {
-      // Usuario no encontrado o credenciales inválidas
-      throw Exception('Usuario no encontrado');
-    } else {
-      throw Exception('Fallo al iniciar sesión');
-    }
-  } catch (e) {
-    print('Error al iniciar sesión: $e');
-    throw Exception('Error al iniciar sesión: $e');
+Future postLogin({required String email, required String password}) async {
+  var res = await http.post(
+    Uri.parse("https://localhost:7109/tenis/login"),
+    headers: {
+      "content-type": "application/json",
+      "accept": "application/json",
+    },
+    body: json.encode({'email': email, 'password': password}),
+  );
+  if (res.statusCode >= 200 && res.statusCode < 300) {
+    return jsonDecode(res.body) as Map;
+  } else {
+    throw res.body;
   }
 }
