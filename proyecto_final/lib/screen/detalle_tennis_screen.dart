@@ -6,7 +6,8 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 class DetalleProductoScreen extends StatelessWidget {
   final Map<String, dynamic> productoDetalle;
 
-  const DetalleProductoScreen({required this.productoDetalle, Key? key}) : super(key: key);
+  const DetalleProductoScreen({required this.productoDetalle, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,7 @@ class DetalleProductoScreen extends StatelessWidget {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 image: DecorationImage(
                   image: NetworkImage(productoDetalle['image_name']),
-            
+                  
                 ),
               ),
             ),
@@ -34,7 +35,7 @@ class DetalleProductoScreen extends StatelessWidget {
             Text(
               productoDetalle['nombre'],
               style: TextStyle(
-                fontSize: 18, 
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
@@ -83,7 +84,7 @@ class DetalleProductoScreen extends StatelessWidget {
                     btnOkOnPress: () async {
                       try {
                         await updateTennis(productId: productId);
-                        Navigator.pop(context); // Cerrar la pantalla después de eliminar
+                        Navigator.pop(context, true);
                       } catch (e) {
                         print('Error al eliminar el producto: $e');
                       }
@@ -95,7 +96,7 @@ class DetalleProductoScreen extends StatelessWidget {
                   style: TextStyle(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.red, // Color de fondo rojo
+                  primary: Colors.red, 
                   textStyle: TextStyle(fontSize: 16),
                 ),
               ),
@@ -122,7 +123,6 @@ Future<void> updateTennis({required int productId}) async {
 
     if (response.statusCode == 200) {
       print('Producto actualizado exitosamente');
-      // Aquí podrías notificar al proveedor para actualizar la lista de productos
     } else {
       throw Exception('Fallo al actualizar el producto');
     }

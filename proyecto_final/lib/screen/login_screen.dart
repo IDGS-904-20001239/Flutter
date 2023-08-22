@@ -14,7 +14,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final flp = Provider.of<LoginFormProvider>(context);
-    
+
     return Scaffold(
       backgroundColor: AppTheme.primaryColor,
       body: Form(
@@ -62,9 +62,8 @@ class LoginScreen extends StatelessWidget {
                       return 'Ingresa tu correo electrónico';
                     }
                     if (!isValidEmail(value)) {
-                       return 'Ingresa un correo electrónico válido';
-              }
-                 
+                      return 'Ingresa un correo electrónico válido';
+                    }
                   },
                 ),
                 SizedBox(height: 10),
@@ -94,7 +93,7 @@ class LoginScreen extends StatelessWidget {
                     if (value == null || value.isEmpty) {
                       return 'Ingresa tu contraseña';
                     }
-                 
+
                     return null;
                   },
                 ),
@@ -102,38 +101,52 @@ class LoginScreen extends StatelessWidget {
                   height: 15.0,
                 ),
                 ElevatedButton(
-  onPressed: () async {
-    FocusScope.of(context).unfocus();
-    print(flp.password);
+                  onPressed: () async {
+                    FocusScope.of(context).unfocus();
+                    print(flp.password);
 
-    if (!flp.isValidForm()) return;
+                    if (!flp.isValidForm()) return;
 
-    flp.isLoading = true;
-    await Future.delayed(Duration(seconds: 2));
+                    flp.isLoading = true;
+                    await Future.delayed(Duration(seconds: 2));
 
-    if (flp.email != null && flp.password != null) {
-      UtilProvider.rtp.saveStorage(
-          usuario: flp.email, password: flp.password);
-      final rest = await UtilProvider.rtp.saveStorage(
-          usuario: flp.email, password: flp.password);
-      if ( rest ==1) {
-                await postLogin(email: flp.email, password: flp.password);
+                    if (flp.email != null && flp.password != null) {
+                      UtilProvider.rtp.saveStorage(
+                          usuario: flp.email, password: flp.password);
+                      final rest = await UtilProvider.rtp.saveStorage(
+                          usuario: flp.email, password: flp.password);
+                      if (rest == 1) {
+                        var validar = await postLogin(
+                            email: flp.email, password: flp.password);
 
-        Dialogos.msgDialog(
-          context: context,
-          texto: 'Bienvenido',
-          dgt: DialogType.success,
-          onPress: () {
-            NotificationsService.showSnackBar(message: 'Bienvenido');
-            Navigator.pushNamed(context, '/Home');
-          },
-        ).show();
-      }
-    }
-    flp.isLoading = false;
-  },
-  child: Text(flp.isLoading ? 'Cargando...' : 'Ingresar'),
-),
+                        if (validar == 0) {
+                          Dialogos.msgDialog(
+                            context: context,
+                            texto: 'No tienes acceso',
+                            dgt: DialogType.error,
+                            onPress: () {
+                              NotificationsService.showSnackBar(
+                                  message: 'Verifica los datos');
+                            },
+                          ).show();
+                        } else {
+                          Dialogos.msgDialog(
+                            context: context,
+                            texto: 'Bienvenido',
+                            dgt: DialogType.success,
+                            onPress: () {
+                              NotificationsService.showSnackBar(
+                                  message: 'Bienvenido');
+                              Navigator.pushNamed(context, '/Home');
+                            },
+                          ).show();
+                        }
+                      }
+                    }
+                    flp.isLoading = false;
+                  },
+                  child: Text(flp.isLoading ? 'Cargando...' : 'Ingresar'),
+                ),
               ],
             ),
           ],
@@ -144,8 +157,7 @@ class LoginScreen extends StatelessWidget {
 }
 
 bool isValidEmail(String email) {
-  final emailRegex =
-      RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
+  final emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
   return emailRegex.hasMatch(email);
 }
 
@@ -158,9 +170,11 @@ Future postLogin({required String email, required String password}) async {
     },
     body: json.encode({'email': email, 'password': password}),
   );
-  if (res.statusCode >= 200 && res.statusCode < 300) {
-    return jsonDecode(res.body) as Map;
+  Map<String, dynamic> response = jsonDecode(res.body);
+  int statusCode = response['statusCode'];
+  if (statusCode == 200) {
+    return jsonDecode(res.body);
   } else {
-    throw res.body;
+    return 0;
   }
 }

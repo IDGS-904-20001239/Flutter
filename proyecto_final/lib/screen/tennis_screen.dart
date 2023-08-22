@@ -87,7 +87,6 @@ class _TennisScreenState extends State<TennisScreen> {
                             borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                             child: Image.network(
                               product['image_name'],
-                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
@@ -112,15 +111,18 @@ class _TennisScreenState extends State<TennisScreen> {
                           children: [
                             GestureDetector(
                               onTap: () async {
-                                // Navegar a la pantalla de detalles
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => DetalleProductoScreen(
                                       productoDetalle: product,
-                                   
-                                    )),
-                                );
+                                   ),
+                                  ),
+                                ).then((value) {
+                                  if (value == true) {
+                                    tProvider.getTennis();
+                                  }
+                                });
                               },
                               child: Icon(
                                 Icons.remove_red_eye,
@@ -157,6 +159,7 @@ Future<void> getTennisDetalle({required int productId}) async {
     print('Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
+      
       print('Detalles del producto');
       // Aquí podrías notificar al proveedor para actualizar la lista de productos
     } else {

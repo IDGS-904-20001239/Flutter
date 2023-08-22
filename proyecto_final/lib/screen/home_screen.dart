@@ -22,13 +22,13 @@ class HomeScreen extends StatelessWidget {
         desc: '¿Estás seguro de que deseas salir de la aplicación?',
         btnCancelOnPress: () {},
         btnOkOnPress: () async {
-              await UtilProvider.rtp.clearSession();
+          await UtilProvider.rtp.clearSession();
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen()),
           );
         },
-      )..show();
+      ).show();
     }
   return Scaffold(
       appBar: AppBar(
@@ -53,27 +53,6 @@ class HomeScreen extends StatelessWidget {
       ),
     );
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        endDrawer: const DrawerWidget(),
-        appBar: AppBar(
-          actions: [IconButton(
-            onPressed: ()async {
-                    Navigator.pushNamed(context, '/Login');
-                },
-            icon: Icon(Icons.logout_sharp))],
-          title: Text('Bienvienido'),
-          backgroundColor: AppTheme.secondaryColor,
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/borboleta2.jpg'),
-            ),
-          ),
-        ),
-      ),
-    );
+   
   }
 }

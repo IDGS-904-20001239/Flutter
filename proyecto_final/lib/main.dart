@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => TennisProvider())
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'MexaTech',
         theme: AppTheme.lightThemeData,
         initialRoute: AppRoutes.initialRouters,
         routes: AppRoutes.routes,
